@@ -66,6 +66,7 @@ include(":core:screenshot-testing")
 include(":core:testing")
 include(":core:ui")
 
+include(":feature:licenses")
 include(":feature:foryou:api")
 include(":feature:foryou:impl")
 include(":feature:interests:api")

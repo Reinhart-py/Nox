@@ -66,6 +66,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.feature.licenses)
     implementation(projects.feature.interests.api)
     implementation(projects.feature.interests.impl)
     implementation(projects.feature.foryou.api)
