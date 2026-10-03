@@ -42,7 +42,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "nowinandroid"
+rootProject.name = "noxkey"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 include(":app")
@@ -52,7 +52,6 @@ include(":core:analytics")
 include(":core:common")
 include(":core:data")
 include(":core:data-test")
-include(":core:database")
 include(":core:datastore")
 include(":core:datastore-proto")
 include(":core:datastore-test")
@@ -67,14 +66,6 @@ include(":core:testing")
 include(":core:ui")
 
 include(":feature:licenses")
-include(":feature:foryou:api")
-include(":feature:foryou:impl")
-include(":feature:interests:api")
-include(":feature:interests:impl")
-include(":feature:bookmarks:api")
-include(":feature:bookmarks:impl")
-include(":feature:topic:api")
-include(":feature:topic:impl")
 include(":feature:search:api")
 include(":feature:search:impl")
 include(":feature:settings:impl")

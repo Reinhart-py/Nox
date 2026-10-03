@@ -27,13 +27,12 @@ import com.google.samples.apps.nowinandroid.core.data.util.TimeZoneMonitor
 import com.google.samples.apps.nowinandroid.core.navigation.NavigationState
 import com.google.samples.apps.nowinandroid.core.navigation.rememberNavigationState
 import com.google.samples.apps.nowinandroid.core.ui.TrackDisposableJank
-import com.google.samples.apps.nowinandroid.feature.bookmarks.api.navigation.BookmarksNavKey
-import com.google.samples.apps.nowinandroid.feature.foryou.api.navigation.ForYouNavKey
+import com.google.samples.apps.nowinandroid.navigation.LicensesNavKey
 import com.google.samples.apps.nowinandroid.navigation.TOP_LEVEL_NAV_ITEMS
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.datetime.TimeZone
@@ -45,7 +44,7 @@ fun rememberNiaAppState(
     timeZoneMonitor: TimeZoneMonitor,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ): NiaAppState {
-    val navigationState = rememberNavigationState(ForYouNavKey, TOP_LEVEL_NAV_ITEMS.keys)
+    val navigationState = rememberNavigationState(LicensesNavKey, TOP_LEVEL_NAV_ITEMS.keys)
 
     NavigationTrackingSideEffect(navigationState)
 
@@ -82,22 +81,8 @@ class NiaAppState(
             initialValue = false,
         )
 
-    /**
-     * The top level nav keys that have unread news resources.
-     */
     val topLevelNavKeysWithUnreadResources: StateFlow<Set<NavKey>> =
-        userNewsResourceRepository.observeAllForFollowedTopics()
-            .combine(userNewsResourceRepository.observeAllBookmarked()) { forYouNewsResources, bookmarkedNewsResources ->
-                setOfNotNull(
-                    ForYouNavKey.takeIf { forYouNewsResources.any { !it.hasBeenViewed } },
-                    BookmarksNavKey.takeIf { bookmarkedNewsResources.any { !it.hasBeenViewed } },
-                )
-            }
-            .stateIn(
-                coroutineScope,
-                SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptySet(),
-            )
+        MutableStateFlow(emptySet())
 
     val currentTimeZone = timeZoneMonitor.currentTimeZone
         .stateIn(
@@ -107,9 +92,6 @@ class NiaAppState(
         )
 }
 
-/**
- * Stores information about navigation events to be used with JankStats
- */
 @Composable
 private fun NavigationTrackingSideEffect(navigationState: NavigationState) {
     TrackDisposableJank(navigationState.currentKey) { metricsHolder ->

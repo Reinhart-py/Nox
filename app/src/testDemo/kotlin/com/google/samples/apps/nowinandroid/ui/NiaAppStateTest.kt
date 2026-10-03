@@ -21,14 +21,11 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.navigation3.runtime.NavBackStack
 import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.navigation.NavigationState
-import com.google.samples.apps.nowinandroid.core.navigation.Navigator
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestNewsRepository
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
 import com.google.samples.apps.nowinandroid.core.testing.util.TestNetworkMonitor
 import com.google.samples.apps.nowinandroid.core.testing.util.TestTimeZoneMonitor
-import com.google.samples.apps.nowinandroid.feature.bookmarks.api.navigation.BookmarksNavKey
-import com.google.samples.apps.nowinandroid.feature.foryou.api.navigation.ForYouNavKey
-import com.google.samples.apps.nowinandroid.feature.interests.api.navigation.InterestsNavKey
+import com.google.samples.apps.nowinandroid.navigation.LicensesNavKey
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
 import kotlinx.coroutines.flow.collect
@@ -66,18 +63,16 @@ class NiaAppStateTest {
     private lateinit var state: NiaAppState
 
     private fun testNavigationState() = NavigationState(
-        startKey = ForYouNavKey,
-        topLevelStack = NavBackStack(ForYouNavKey),
+        startKey = LicensesNavKey,
+        topLevelStack = NavBackStack(LicensesNavKey),
         subStacks = mapOf(
-            ForYouNavKey to NavBackStack(ForYouNavKey),
-            BookmarksNavKey to NavBackStack(BookmarksNavKey),
+            LicensesNavKey to NavBackStack(LicensesNavKey),
         ),
     )
 
     @Test
     fun niaAppState_currentDestination() = runTest {
         val navigationState = testNavigationState()
-        val navigator = Navigator(navigationState)
 
         composeTestRule.setContent {
             state = remember(navigationState) {
@@ -91,16 +86,8 @@ class NiaAppStateTest {
             }
         }
 
-        assertEquals(ForYouNavKey, state.navigationState.currentTopLevelKey)
-        assertEquals(ForYouNavKey, state.navigationState.currentKey)
-
-        // Navigate to another destination once
-        navigator.navigate(BookmarksNavKey)
-
-        composeTestRule.waitForIdle()
-
-        assertEquals(BookmarksNavKey, state.navigationState.currentTopLevelKey)
-        assertEquals(BookmarksNavKey, state.navigationState.currentKey)
+        assertEquals(LicensesNavKey, state.navigationState.currentTopLevelKey)
+        assertEquals(LicensesNavKey, state.navigationState.currentKey)
     }
 
     @Test
@@ -115,9 +102,9 @@ class NiaAppStateTest {
 
         val navigationState = state.navigationState
 
-        assertEquals(3, navigationState.topLevelKeys.size)
+        assertEquals(1, navigationState.topLevelKeys.size)
         assertEquals(
-            setOf(ForYouNavKey, BookmarksNavKey, InterestsNavKey(null)),
+            setOf(LicensesNavKey),
             navigationState.topLevelKeys,
         )
     }

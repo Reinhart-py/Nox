@@ -28,10 +28,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import com.google.samples.apps.nowinandroid.core.network.retrofit.JulesApiService
 import kotlinx.serialization.json.Json
 import okhttp3.Call
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -91,5 +95,21 @@ internal object NetworkModule {
                 }
             }
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun providesJulesApiService(
+        networkJson: Json,
+        okhttpCallFactory: dagger.Lazy<Call.Factory>,
+    ): JulesApiService {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.BACKEND_URL)
+            .callFactory { okhttpCallFactory.get().newCall(it) }
+            .addConverterFactory(
+                networkJson.asConverterFactory("application/json".toMediaType()),
+            )
+            .build()
+            .create(JulesApiService::class.java)
     }
 }

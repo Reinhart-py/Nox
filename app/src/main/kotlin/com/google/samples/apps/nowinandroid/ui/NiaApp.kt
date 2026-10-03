@@ -44,6 +44,7 @@ import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneSt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,20 +72,19 @@ import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaNavig
 import com.google.samples.apps.nowinandroid.core.designsystem.component.NiaTopAppBar
 import com.google.samples.apps.nowinandroid.core.designsystem.icon.NiaIcons
 import com.google.samples.apps.nowinandroid.core.designsystem.theme.GradientColors
-import com.google.samples.apps.nowinandroid.core.designsystem.theme.LocalGradientColors
 import com.google.samples.apps.nowinandroid.core.navigation.Navigator
 import com.google.samples.apps.nowinandroid.core.navigation.toEntries
-import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.LocalSnackbarHostState
-import com.google.samples.apps.nowinandroid.feature.bookmarks.impl.navigation.bookmarksEntry
-import com.google.samples.apps.nowinandroid.feature.foryou.api.navigation.ForYouNavKey
-import com.google.samples.apps.nowinandroid.feature.foryou.impl.navigation.forYouEntry
-import com.google.samples.apps.nowinandroid.feature.interests.impl.navigation.interestsEntry
+import com.google.samples.apps.nowinandroid.feature.licenses.LicenseScreen
 import com.google.samples.apps.nowinandroid.feature.search.api.navigation.SearchNavKey
 import com.google.samples.apps.nowinandroid.feature.search.impl.navigation.searchEntry
 import com.google.samples.apps.nowinandroid.feature.settings.impl.SettingsDialog
-import com.google.samples.apps.nowinandroid.feature.topic.impl.navigation.topicEntry
+import com.google.samples.apps.nowinandroid.navigation.LicensesNavKey
 import com.google.samples.apps.nowinandroid.navigation.TOP_LEVEL_NAV_ITEMS
 import com.google.samples.apps.nowinandroid.feature.settings.impl.R as settingsR
+
+val LocalSnackbarHostState = compositionLocalOf<SnackbarHostState> {
+    error("No SnackbarHostState provided")
+}
 
 @Composable
 fun NiaApp(
@@ -92,16 +92,11 @@ fun NiaApp(
     modifier: Modifier = Modifier,
     windowAdaptiveInfo: WindowAdaptiveInfo = currentWindowAdaptiveInfo(),
 ) {
-    val shouldShowGradientBackground = appState.navigationState.currentTopLevelKey == ForYouNavKey
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
 
     NiaBackground(modifier = modifier) {
         NiaGradientBackground(
-            gradientColors = if (shouldShowGradientBackground) {
-                LocalGradientColors.current
-            } else {
-                GradientColors()
-            },
+            gradientColors = GradientColors(),
         ) {
             val snackbarHostState = remember { SnackbarHostState() }
 
@@ -121,7 +116,6 @@ fun NiaApp(
                 NiaApp(
                     appState = appState,
 
-                    // TODO: Settings should be a dialog screen
                     showSettingsDialog = showSettingsDialog,
                     onSettingsDismissed = { showSettingsDialog = false },
                     onTopAppBarActionClick = { showSettingsDialog = true },
@@ -245,7 +239,6 @@ internal fun NiaApp(
                 }
 
                 Box(
-                    // Workaround for https://issuetracker.google.com/338478720
                     modifier = Modifier.consumeWindowInsets(
                         if (shouldShowTopAppBar) {
                             WindowInsets.safeDrawing.only(WindowInsetsSides.Top)
@@ -257,10 +250,9 @@ internal fun NiaApp(
                     val listDetailStrategy = rememberListDetailSceneStrategy<NavKey>()
 
                     val entryProvider = entryProvider {
-                        forYouEntry(navigator)
-                        bookmarksEntry(navigator)
-                        interestsEntry(navigator)
-                        topicEntry(navigator)
+                        entry<LicensesNavKey> {
+                            LicenseScreen()
+                        }
                         searchEntry(navigator)
                     }
 
@@ -270,9 +262,6 @@ internal fun NiaApp(
                         onBack = { navigator.goBack() },
                     )
                 }
-
-                // TODO: We may want to add padding or spacer when the snackbar is shown so that
-                //  content doesn't display behind it.
             }
         }
     }
@@ -286,9 +275,6 @@ private fun Modifier.notificationDot(): Modifier =
             drawCircle(
                 tertiaryColor,
                 radius = 5.dp.toPx(),
-                // This is based on the dimensions of the NavigationBar's "indicator pill";
-                // however, its parameters are private, so we must depend on them implicitly
-                // (NavigationBarTokens.ActiveIndicatorWidth = 64.dp)
                 center = center + Offset(
                     64.dp.toPx() * .45f,
                     32.dp.toPx() * -.45f - 6.dp.toPx(),
