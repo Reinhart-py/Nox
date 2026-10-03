@@ -10,20 +10,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
-data class DummyLicense(val id: String, val owner: String, val key: String, val isActive: Boolean, val type: String, val expiresAt: String?)
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LicenseScreen() {
+fun LicenseScreen(
+    viewModel: LicenseViewModel = hiltViewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
-    
-    // Dummy data for visualization before we hook up the API
-    val licenses = listOf(
-        DummyLicense("1", "SRJ Feb", "srj-1234-abcd", true, "Standard", "2026-12-31"),
-        DummyLicense("2", "Test User", "test-0000-xxxx", false, "Timer", "Expired"),
-        DummyLicense("3", "Admin Demo", "adm-5555-yyyy", true, "Standard", null)
-    )
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -61,20 +57,35 @@ fun LicenseScreen() {
                 singleLine = true
             )
 
-            // License List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 80.dp) // padding for FAB
-            ) {
-                items(licenses) { license ->
-                    LicenseCard(
-                        owner = license.owner,
-                        licenseKey = license.key,
-                        isActive = license.isActive,
-                        type = license.type,
-                        expiresAt = license.expiresAt,
-                        onClick = { /* TODO: Open Details Sheet */ }
-                    )
+            // State handling
+            when (uiState) {
+                is LicenseUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                }
+                is LicenseUiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                        Text("Error: ${(uiState as LicenseUiState.Error).message}", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                is LicenseUiState.Success -> {
+                    val licenses = (uiState as LicenseUiState.Success).licenses
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 80.dp) // padding for FAB
+                    ) {
+                        items(licenses) { license ->
+                            LicenseCard(
+                                owner = license.owner,
+                                licenseKey = license.key,
+                                isActive = license.isActive,
+                                type = license.type,
+                                expiresAt = license.expiresAt ?: "Never",
+                                onClick = { /* TODO: Open Details Sheet */ }
+                            )
+                        }
+                    }
                 }
             }
         }

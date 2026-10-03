@@ -28,7 +28,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import com.google.samples.apps.nowinandroid.core.network.retrofit.JulesApiService
+import com.google.samples.apps.nowinandroid.core.network.retrofit.JulesAdminApi
 import kotlinx.serialization.json.Json
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
@@ -99,17 +99,17 @@ internal object NetworkModule {
 
     @Provides
     @Singleton
-    fun providesJulesApiService(
+    fun providesJulesAdminApi(
         networkJson: Json,
         okhttpCallFactory: dagger.Lazy<Call.Factory>,
-    ): JulesApiService {
+    ): JulesAdminApi {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.BACKEND_URL)
+            .baseUrl("https://jules-api.vercel.app/")
             .callFactory { okhttpCallFactory.get().newCall(it) }
             .addConverterFactory(
                 networkJson.asConverterFactory("application/json".toMediaType()),
             )
             .build()
-            .create(JulesApiService::class.java)
+            .create(JulesAdminApi::class.java)
     }
 }
